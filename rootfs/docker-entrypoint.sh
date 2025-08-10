@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/sh
 
 set -e
 
@@ -29,4 +29,5 @@ auto_envsubst() {
 
 auto_envsubst
 
-exec "$@"
+# Start Supervisor when container starts (It calls nginx)
+exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf

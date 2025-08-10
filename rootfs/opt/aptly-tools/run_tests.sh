@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 # Copyright 2018-2020 Artem Smirnov <urpylka@gmail.com>
 # Licensed under the Apache License, Version 2.0
@@ -8,10 +8,10 @@
 sleep 4
 
 # Generate GPG keys
-/opt/keys_gen.sh "First Last" "your@email.com" "Password"
+/opt/aptly-tools/keys_gen.sh "First Last" "your@email.com" "Password"
 
 # Generate htpasswd file
-/opt/gen_htpasswd.sh admin passwd
+/opt/aptly-tools/gen_htpasswd.sh admin passwd
 
 echo2() {
     # TEMPLATE: echo_stamp <TEXT> <COLOR> <LINE_BREAK>

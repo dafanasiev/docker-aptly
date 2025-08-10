@@ -33,7 +33,7 @@
     docker run --rm --log-driver=none \
       --volume aptly-data:/opt/aptly \
       urpylka/aptly:latest \
-      /opt/keys_gen.sh "First Last" "your@email.com" "Password"
+      /opt/aptly-tools/keys_gen.sh "First Last" "your@email.com" "Password"
     ```
 
     `"First Last" "your@email.com" "Password"` will be associated with the GPG apt signing key.
@@ -100,7 +100,7 @@
         docker run --rm --log-driver=none \
           --volume aptly-data:/opt/aptly \
           urpylka/aptly:latest \
-          /opt/gen_htpasswd.sh "admin" "passwd"
+          /opt/aptly-tools/gen_htpasswd.sh "admin" "passwd"
         ```
 
         After executing:
@@ -217,7 +217,7 @@ docker rm 85de5904f6fc73c04f4f8e7d08a09a1a63c2ba28afb5ce45aa9578ebdefeadc7
 ## Configure the mirror
 
 1. Enter to the container. How to attach? See [here](#configure-the-repository).
-2. Run `/opt/update_mirror.sh`. This script consists 3 preconfigured configuration which you can use or use your own. For use uncomment one (by default for the Raspbian mirror):
+2. Run `/opt/aptly-tools/update_mirror.sh`. This script consists 3 preconfigured configuration which you can use or use your own. For use uncomment one (by default for the Raspbian mirror):
 
     ```bash
     UPSTREAM_URL="http://raspbian.raspberrypi.org/raspbian/"
@@ -227,7 +227,7 @@ docker rm 85de5904f6fc73c04f4f8e7d08a09a1a63c2ba28afb5ce45aa9578ebdefeadc7
     ARCH=armhf
     ```
 
-3. After that you need to setup the public key is associated with this repo to `/opt/aptly/gpg/trustedkeys.gpg`, for this use `/opt/keys_imp.sh`, otherwise you will catch the error:
+3. After that you need to setup the public key is associated with this repo to `/opt/aptly/gpg/trustedkeys.gpg`, for this use `/opt/aptly-tools/keys_imp.sh`, otherwise you will catch the error:
 
     ```log
     ERROR: unable to fetch mirror: verification of detached signature failed: exit status 2

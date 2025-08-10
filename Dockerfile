@@ -15,17 +15,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 LABEL maintainer="urpylka@gmail.com"
 
 ARG DEBIAN_FRONTEND=noninteractive \
     VER_APTLY
-
-# Update APT repository & install packages
-RUN set -eux; \
-  apt -q update && apt dist-upgrade -y; \
-  apt -y --no-install-recommends install \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=tmpfs,target=/var/log \
+    --mount=type=tmpfs,target=/var/tmp \
+    --mount=type=tmpfs,target=/root/.launchpadlib \
+    --mount=type=tmpfs,target=/var/cache \
+    --mount=type=tmpfs,target=/run \
+    --mount=type=tmpfs,target=/tmp \
+  set -eux; \
+  apt -q update && apt upgrade -y; \
+  apt -y --no-install-recommends --no-install-suggests install \
     graphviz \
     supervisor \
     curl \
@@ -35,7 +41,6 @@ RUN set -eux; \
     gpg-agent \
     ca-certificates \
     rng-tools; \
-  apt clean && apt autoclean && apt autoremove; \
   echo "if ! shopt -oq posix; then\n\
   if [ -f /usr/share/bash-completion/bash_completion ]; then\n\
     . /usr/share/bash-completion/bash_completion\n\
@@ -47,33 +52,39 @@ fi" >> /etc/bash.bashrc;
 ENV GNUPGHOME="/opt/aptly/gpg" \
     NGINX_CLIENT_MAX_BODY_SIZE=100M
 
-COPY [ "assets", "/tmp/assets" ]
+COPY ./rootfs/ /
 
 # Install Aptly
-RUN set -eux; \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=tmpfs,target=/var/log \
+    --mount=type=tmpfs,target=/var/tmp \
+    --mount=type=tmpfs,target=/root/.launchpadlib \
+    --mount=type=tmpfs,target=/var/cache \
+    --mount=type=tmpfs,target=/run \
+    --mount=type=tmpfs,target=/tmp \
+  set -eux; \
   mkdir -p /etc/apt/keyrings && chmod 755 /etc/apt/keyrings; \
   curl -sLo /etc/apt/keyrings/aptly.asc http://www.aptly.info/pubkey.txt; \
-  echo "deb [signed-by=/etc/apt/keyrings/aptly.asc] http://repo.aptly.info/release bookworm main" >> /etc/apt/sources.list.d/aptly.list; \
-  apt -q update && apt -y --no-install-recommends install aptly=${VER_APTLY} && apt clean; \
-  rm -rf /var/lib/apt/lists/* \
-    && mv /tmp/assets/aptly.conf /etc/aptly.conf \
-    && mv /tmp/assets/supervisord.web.conf /etc/supervisor/conf.d/web.conf \
-    && mv /tmp/assets/*.sh /opt/;
+  echo "deb [signed-by=/etc/apt/keyrings/aptly.asc] http://repo.aptly.info/release trixie main" >> /etc/apt/sources.list.d/aptly.list; \
+  apt -q update && apt -y --no-install-recommends --no-install-suggests install aptly=${VER_APTLY};
 
 # Configure Nginx
-RUN  set -eux; \
-  apt -q update && apt -y install nginx && apt clean; \
-  rm /etc/nginx/sites-enabled/* \
-    && mkdir -p /etc/nginx/templates \
-    && mv /tmp/assets/nginx.conf.template /etc/nginx/templates/default.conf.template \
-    && rm -r /tmp/assets;
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=tmpfs,target=/var/log \
+    --mount=type=tmpfs,target=/var/tmp \
+    --mount=type=tmpfs,target=/root/.launchpadlib \
+    --mount=type=tmpfs,target=/var/cache \
+    --mount=type=tmpfs,target=/run \
+    --mount=type=tmpfs,target=/tmp \
+  set -eux; \
+  apt -q update && apt -y install nginx; \
+  rm /etc/nginx/sites-enabled/*
 
 # Declare ports in use
 EXPOSE 80 8080
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
-
-# Start Supervisor when container starts (It calls nginx)
-CMD /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
-
 WORKDIR /opt/aptly
+
+ENTRYPOINT [ "/docker-entrypoint.sh" ]

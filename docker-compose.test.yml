@@ -6,4 +6,4 @@ services:
       dockerfile: Dockerfile
       args:
         VER_APTLY: 1.6.2
-    command: /opt/run_tests.sh
+    command: /opt/aptly-tools/run_tests.sh

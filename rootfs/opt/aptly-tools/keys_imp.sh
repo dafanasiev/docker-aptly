@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 # Copyright 2018-2020 Artem B. Smirnov
 # Copyright 2018 Jon Azpiazu
